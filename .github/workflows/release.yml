@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build and publish (Apple Silicon)
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Validate release version
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          VERSION="$(printf '%s' "$RELEASE_TAG" | sed 's/^v//')"
+          APP_VERSION=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Resources/Info.plist)
+          if [[ "$VERSION" != "$APP_VERSION" ]]; then
+            echo "Tag $RELEASE_TAG does not match Info.plist version $APP_VERSION" >&2
+            exit 1
+          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+      - name: Validate metadata and localization
+        run: |
+          plutil -lint Resources/Info.plist
+          plutil -lint Resources/en.lproj/Localizable.strings Resources/zh-Hans.lproj/Localizable.strings
+          plutil -lint Resources/en.lproj/InfoPlist.strings Resources/zh-Hans.lproj/InfoPlist.strings
+          python3 Scripts/check-localizations.py
+      - name: Build and run self-tests
+        run: ./scripts/self-test.sh
+      - name: Build app bundle and verify localization
+        run: ./scripts/build-app.sh release
+      - name: Verify app signature
+        run: codesign --verify --deep --strict dist/PowerSentry.app
+      - name: Create ZIP, DMG, and checksums
+        run: ./scripts/package.sh "$VERSION"
+      - name: Publish bilingual GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          NOTES_FILE=".github/release-notes/$GITHUB_REF_NAME.md"
+          if [[ ! -f "$NOTES_FILE" ]]; then
+            echo "Missing bilingual release notes: $NOTES_FILE" >&2
+            exit 1
+          fi
+          gh release create "$GITHUB_REF_NAME" \
+            "dist/PowerSentry-$VERSION-arm64.zip" \
+            "dist/PowerSentry-$VERSION-arm64.dmg" \
+            "dist/SHA256SUMS" \
+            --title "PowerSentry $VERSION" \
+            --notes-file "$NOTES_FILE"

@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and test (Apple Silicon)
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Show toolchain
+        run: |
+          sw_vers
+          uname -m
+          swift --version
+          xcodebuild -version
+          test "$(uname -m)" = "arm64"
+      - name: Validate metadata and localization
+        run: |
+          plutil -lint Resources/Info.plist
+          plutil -lint Resources/en.lproj/Localizable.strings Resources/zh-Hans.lproj/Localizable.strings
+          plutil -lint Resources/en.lproj/InfoPlist.strings Resources/zh-Hans.lproj/InfoPlist.strings
+          python3 Scripts/check-localizations.py
+      - name: Build and run self-tests
+        run: |
+          swift build -c release
+          ./scripts/self-test.sh
+      - name: Build app bundle and verify localization
+        run: ./scripts/build-app.sh release
+      - name: Verify app signature
+        run: codesign --verify --deep --strict dist/PowerSentry.app
+      - name: Package CI artifact
+        run: ditto -c -k --sequesterRsrc --keepParent dist/PowerSentry.app dist/PowerSentry-ci-arm64.zip
+      - name: Upload app bundle
+        uses: actions/upload-artifact@v6
+        with:
+          name: PowerSentry-ci-arm64
+          path: dist/PowerSentry-ci-arm64.zip
+          if-no-files-found: error
+          retention-days: 7
