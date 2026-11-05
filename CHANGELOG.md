@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.2.0] - 2026-11-06
+
+### Added
+- Complete native UI localization for seven additional languages: Spanish (es), Korean (ko), Japanese (ja), German (de), French (fr), Dutch (nl), and Traditional Chinese (zh-Hant).
+- All nine supported languages now include every menu, dashboard, alert, incident recommendation, status message, and confirmation string.
+- Automatic locale selection from macOS preferred languages, with English as the fallback.
+
+### Improved
+- CI and Release workflows validate all localization resources, matching keys, and printf-style format placeholders for nine languages.
+- README files document all supported UI languages and how to change the system language.
+- Expand release notes with explicit features, install/upgrade guidance, privacy controls, and known limitations.
+
+### Compatibility
+- No changes to local SQLite storage, telemetry behavior, permission model, process-termination safeguards, or menu-bar-only operation.
+- The release remains Apple Silicon only, ad-hoc signed, and not notarized by Apple.
+
 ## [0.1.0] - 2026-11-05
 
 ### Added

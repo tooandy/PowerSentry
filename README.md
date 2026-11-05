@@ -10,7 +10,7 @@
 
 PowerSentry lives in the macOS menu bar and helps explain battery drain by observing battery telemetry, process resource usage, network throughput, and sleep/wake activity. It learns a personal power baseline and reports sustained anomalies without automatically terminating processes or uploading telemetry.
 
-> **Current release target:** Apple Silicon (arm64), macOS 14 or later. The app UI supports English and Simplified Chinese and follows the macOS preferred language. Public builds are ad-hoc signed and are not notarized by Apple.
+> **Current release target:** Apple Silicon (arm64), macOS 14 or later. The app UI supports nine languages and follows the macOS preferred language. Public builds are ad-hoc signed and are not notarized by Apple.
 
 ## Features
 
@@ -22,7 +22,7 @@ PowerSentry lives in the macOS menu bar and helps explain battery drain by obser
 - **Sleep and wake diagnostics:** recent power events and active power assertions from pmset.
 - **Local history:** SQLite telemetry and incidents, with samples retained for the latest seven days.
 - **Local notifications:** macOS notifications for newly detected incidents.
-- **Bilingual UI:** English and Simplified Chinese, selected automatically from macOS language preferences.
+- **Nine-language UI:** English, Simplified/Traditional Chinese, Spanish, Korean, Japanese, German, French, and Dutch, selected automatically from macOS language preferences.
 - **Menu-bar-only lifecycle:** no Dock icon or Cmd+Tab entry; closing the dashboard leaves monitoring active.
 
 ## Download and install
@@ -36,10 +36,17 @@ PowerSentry does not ask you to disable Gatekeeper globally. Only install builds
 
 ## Language
 
-PowerSentry supports:
+PowerSentry supports all nine languages below:
 
 - English (en)
 - Simplified Chinese (zh-Hans)
+- Traditional Chinese (zh-Hant)
+- Spanish (es)
+- Korean (ko)
+- Japanese (ja)
+- German (de)
+- French (fr)
+- Dutch (nl)
 
 The app follows the macOS preferred language. Unsupported languages fall back to English. Change the preferred language in **System Settings → General → Language & Region**, then relaunch PowerSentry.
 
@@ -106,12 +113,12 @@ GitHub Actions is configured for:
 To publish a new version:
 
 1. Update CFBundleShortVersionString in Resources/Info.plist.
-2. Update CHANGELOG.md and add .github/release-notes/vX.Y.Z.md with English and Simplified Chinese notes.
+2. Update CHANGELOG.md and add .github/release-notes/vX.Y.Z.md with English and Simplified Chinese notes (the application UI supports all nine languages).
 3. Commit and push the changes to main.
 4. Create and push the matching tag:
 
-    git tag v0.1.0
-    git push origin v0.1.0
+    git tag v0.2.0
+    git push origin v0.2.0
 
 The tag version must match the app's CFBundleShortVersionString. The release workflow publishes the ZIP, DMG, and checksums automatically.
 

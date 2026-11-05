@@ -10,7 +10,7 @@
 
 PowerSentry 常驻 macOS 菜单栏，通过观察电池遥测、进程资源占用、网络吞吐和睡眠 / 唤醒活动，帮助定位 Mac 的耗电来源。它会学习个人功耗基线并报告持续异常，但不会自动结束进程，也不会上传遥测数据。
 
-> **当前发行目标：** Apple Silicon（arm64），macOS 14 或更高版本。应用界面支持简体中文和英文，会自动跟随 macOS 首选语言。公开发行包使用 Ad-hoc 签名，未经 Apple 公证。
+> **当前发行目标：** Apple Silicon（arm64），macOS 14 或更高版本。应用界面支持 9 种语言，会自动跟随 macOS 首选语言。公开发行包使用 Ad-hoc 签名，未经 Apple 公证。
 
 ## 功能特性
 
@@ -22,7 +22,7 @@ PowerSentry 常驻 macOS 菜单栏，通过观察电池遥测、进程资源占�
 - **睡眠与唤醒诊断：** 读取 pmset 最近电源事件和当前电源断言。
 - **本地历史：** 使用 SQLite 保存遥测和异常事件，采样数据保留最近 7 天。
 - **本地通知：** 通过 macOS 通知提醒新发现的异常。
-- **中英文界面：** 支持简体中文和英文，自动跟随 macOS 首选语言。
+- **九语言界面：** 支持英文、简体中文、繁体中文、西班牙语、韩语、日语、德语、法语和荷兰语，自动跟随 macOS 首选语言。
 - **纯菜单栏生命周期：** 不显示 Dock 图标或 Cmd+Tab 项目；关闭仪表盘后监控仍会继续运行。
 
 ## 下载与安装
@@ -36,10 +36,17 @@ PowerSentry 不会要求用户全局关闭 Gatekeeper。请只安装你信任的
 
 ## 语言设置
 
-PowerSentry 当前支持：
+PowerSentry 当前完整支持以下 9 种界面语言：
 
 - 英文（en）
 - 简体中文（zh-Hans）
+- 繁体中文（zh-Hant）
+- 西班牙语（es）
+- 韩语（ko）
+- 日语（ja）
+- 德语（de）
+- 法语（fr）
+- 荷兰语（nl）
 
 应用会自动跟随 macOS 首选语言；其他语言会回退到英文。修改语言后，请重新启动 PowerSentry。语言设置位于 **系统设置 → 通用 → 语言与地区**。
 
@@ -110,8 +117,8 @@ GitHub Actions 已配置以下流程：
 3. 提交并推送到 main。
 4. 创建并推送匹配的版本 Tag：
 
-    git tag v0.1.0
-    git push origin v0.1.0
+    git tag v0.2.0
+    git push origin v0.2.0
 
 Tag 版本必须与应用的 CFBundleShortVersionString 一致。Release 工作流会自动发布 ZIP、DMG 和校验文件。
 

@@ -9,7 +9,7 @@ func trf(_ key: String, _ arguments: CVarArg...) -> String {
 }
 
 enum PowerSentryLocalization {
-    static let supportedLanguages = ["en", "zh-Hans"]
+    static let supportedLanguages = ["en", "zh-Hans", "zh-Hant", "es", "ko", "ja", "de", "fr", "nl"]
 
     static func validateResources() -> Bool {
         let requiredKeys = [
@@ -35,7 +35,7 @@ enum PowerSentryLocalization {
             }
         }
 
-        print("PASS: English and Simplified Chinese resources are bundled and readable")
+        print("PASS: \(supportedLanguages.count) localized language resources are bundled and readable")
         return true
     }
 }

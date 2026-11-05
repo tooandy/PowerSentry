@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Validate the shipped English and Simplified Chinese macOS localization tables."""
+"""Validate all shipped PowerSentry macOS localization tables."""
 from pathlib import Path
 import plistlib
 import re
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-LANGUAGES = ("en", "zh-Hans")
+LANGUAGES = ("en", "zh-Hans", "zh-Hant", "es", "ko", "ja", "de", "fr", "nl")
 FORMAT_TOKEN = re.compile(
-    r"%(?:\d+\$)?(?:[-+0 #]*\d*(?:\.\d+)?)?(?:hh|h|ll|l|z|t|j)?[@diuoxXfFeEgGcCsSp]"
+    r"%(?!%)(?:\d+\$)?(?:[-+0#]*\d*(?:\.\d+)?)?(?:hh|h|ll|l|z|t|j)?[@diuoxXfFeEgGcCsSp]"
 )
 
 
@@ -59,19 +59,25 @@ def main() -> int:
     source_keys: set[str] = set()
     if set(tables) == set(LANGUAGES):
         english = tables["en"]
-        chinese = tables["zh-Hans"]
-        for key in set(english) & set(chinese):
-            if placeholders(english[key]) != placeholders(chinese[key]):
-                errors.append(
-                    f"format placeholders differ for {key}: "
-                    f"en={placeholders(english[key])}, zh-Hans={placeholders(chinese[key])}"
-                )
+        for language in LANGUAGES[1:]:
+            for key in set(english) & set(tables[language]):
+                if placeholders(english[key]) != placeholders(tables[language][key]):
+                    errors.append(
+                        f"format placeholders differ for {key}: "
+                        f"en={placeholders(english[key])}, {language}={placeholders(tables[language][key])}"
+                    )
 
         for source in (ROOT / "Sources").rglob("*.swift"):
             source_keys.update(
                 key for key in re.findall(r'\btrf?\("([^"]+)"', source.read_text(encoding="utf-8"))
                 if "\\(" not in key
             )
+        # Dynamic incident statuses are looked up via key interpolation in Swift.
+        source_keys.update({
+            "incident.status.open", "incident.status.acknowledged",
+            "incident.status.resolved", "incident.status.ignored",
+            "incident.status.actionTaken"
+        })
         missing_source = source_keys - set(english)
         if missing_source:
             errors.append(f"source references missing localization keys: {sorted(missing_source)}")
@@ -82,7 +88,7 @@ def main() -> int:
         if info_plist.get("CFBundleDevelopmentRegion") != "en":
             errors.append("Info.plist: CFBundleDevelopmentRegion must be en for English fallback")
         if set(info_plist.get("CFBundleLocalizations", [])) != set(LANGUAGES):
-            errors.append("Info.plist: CFBundleLocalizations must contain en and zh-Hans")
+            errors.append(f"Info.plist: CFBundleLocalizations must contain {LANGUAGES}")
         if info_plist.get("LSUIElement") is not True:
             errors.append("Info.plist: LSUIElement must remain true (menu-bar-only app)")
     except Exception as error:  # noqa: BLE001 - report malformed plist as a validation error
@@ -96,7 +102,7 @@ def main() -> int:
 
     print(
         f"PASS: {len(tables['en'])} matching localization keys, "
-        f"{len(source_keys)} source references, 2 languages, format placeholders match"
+        f"{len(source_keys)} source references, {len(LANGUAGES)} languages, format placeholders match"
     )
     return 0
 
