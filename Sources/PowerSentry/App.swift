@@ -181,7 +181,7 @@ struct PowerSentryApp: App {
             MenuPanel()
                 .environmentObject(monitor)
         } label: {
-            Label(monitor.menuTitle, systemImage: monitor.menuIcon)
+            MenuBatteryStatusLabel(battery: monitor.snapshot?.battery)
         }
         .menuBarExtraStyle(.window)
     }

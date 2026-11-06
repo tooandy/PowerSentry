@@ -196,21 +196,4 @@ final class MonitorEngine: ObservableObject {
         }
     }
 
-    var menuTitle: String {
-        guard let battery = snapshot?.battery else { return "PowerSentry" }
-        if battery.externalPower { return "🔋 \(Int(battery.percentage))%" }
-        return String(format: "🔋 %.0f%% · %.1fW", battery.percentage, battery.powerWatts)
-    }
-
-    var menuIcon: String {
-        guard let battery = snapshot?.battery else { return "battery.0" }
-        if battery.externalPower { return "battery.100percent.bolt" }
-        switch battery.percentage {
-        case 80...: return "battery.100percent"
-        case 60..<80: return "battery.75percent"
-        case 40..<60: return "battery.50percent"
-        case 20..<40: return "battery.25percent"
-        default: return "battery.0percent"
-        }
-    }
 }

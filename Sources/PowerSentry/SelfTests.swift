@@ -30,9 +30,32 @@ enum SelfTests {
         check("per-process network rule", testNetworkRunaway())
         check("cached network sample does not advance streak", testNetworkNeedsFreshSamples())
         check("DarkWake frequency rule", testDarkWakeRule())
+        check("menu battery level stays inside icon", testMenuBatteryPercentage())
+        check("menu battery fallback", MenuBatteryStatus(battery: nil).percentageText == "—")
+        check("menu battery remains readable at menu-bar size",
+              MenuBatteryGlyph.bodyWidth >= 34 && MenuBatteryGlyph.bodyHeight >= 16)
 
         print("SELF_TESTS: \(failures == 0 ? "PASS" : "FAIL") (\(failures) failures)")
         return failures == 0 ? 0 : 1
+    }
+
+    private static func testMenuBatteryPercentage() -> Bool {
+        let levels: [(Double, String)] = [
+            (0, "0%"), (9, "9%"), (25.4, "25%"),
+            (74.7, "75%"), (99.7, "100%"), (100, "100%"),
+            (-1, "0%"), (101, "100%")
+        ]
+        for (percentage, expected) in levels {
+            let sample = BatterySnapshot(
+                timestamp: Date(), percentage: percentage, voltageMillivolts: 12000,
+                currentMilliamps: -125, powerWatts: 1.5, externalPower: false,
+                charging: false, temperatureCelsius: 30, cycleCount: 30,
+                fullCapacityWh: 58, minutesTo20Percent: nil, minutesToEmpty: nil
+            )
+            let label = MenuBatteryStatus(battery: sample)
+            guard label.percentageText == expected else { return false }
+        }
+        return true
     }
 
     private static func baseSnapshot(now: Date, power: Double = 1.5,
