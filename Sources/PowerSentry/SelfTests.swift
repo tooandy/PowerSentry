@@ -32,8 +32,20 @@ enum SelfTests {
         check("DarkWake frequency rule", testDarkWakeRule())
         check("menu battery level stays inside icon", testMenuBatteryPercentage())
         check("menu battery fallback", MenuBatteryStatus(battery: nil).percentageText == "—")
-        check("menu battery dimensions remain compact (35 × 17 pt)",
-              MenuBatteryImageRenderer.width == 35 && MenuBatteryImageRenderer.height == 17)
+        check("menu battery dimensions remain compact (29 × 15 pt, 32 pt with power)",
+              MenuBatteryImageRenderer.width == 29 &&
+              MenuBatteryImageRenderer.pluggedWidth == 32 &&
+              MenuBatteryImageRenderer.height == 15)
+        check("plugged-in symbol follows ExternalConnected even at 100%", testChargingState())
+        check("charging variant has a visible lightning symbol",
+              MenuBatteryImageRenderer.hasDrawnChargingBolt(percentage: 100, showBolt: true))
+        check("unplugged battery variant has no lightning symbol",
+              !MenuBatteryImageRenderer.hasDrawnChargingBolt(percentage: 100, showBolt: false))
+        check("battery outline remains complete alongside lightning symbol",
+              MenuBatteryImageRenderer.hasDrawnOutlineAndTerminal(percentage: 100, showBolt: true))
+        check("rendering cache separates plugged and unplugged symbols",
+              MenuBatteryImageRenderer.image(percentage: 100, showBolt: true) !==
+              MenuBatteryImageRenderer.image(percentage: 100, showBolt: false))
         check("menu battery outline, terminal and numbers drawn at 100",
               MenuBatteryImageRenderer.hasDrawnOutlineAndTerminal(percentage: 100))
         check("menu battery outline, terminal and numbers drawn at 9",
@@ -62,6 +74,20 @@ enum SelfTests {
             guard label.percentageText == expected else { return false }
         }
         return true
+    }
+
+    private static func testChargingState() -> Bool {
+        func sample(externalPower: Bool, charging: Bool) -> BatterySnapshot {
+            BatterySnapshot(
+                timestamp: Date(), percentage: 100, voltageMillivolts: 12000,
+                currentMilliamps: 0, powerWatts: 0, externalPower: externalPower,
+                charging: charging, temperatureCelsius: nil, cycleCount: nil,
+                fullCapacityWh: nil, minutesTo20Percent: nil, minutesToEmpty: nil
+            )
+        }
+        return !MenuBatteryStatus(battery: sample(externalPower: false, charging: false)).showsPowerBolt &&
+               MenuBatteryStatus(battery: sample(externalPower: true, charging: false)).showsPowerBolt &&
+               MenuBatteryStatus(battery: sample(externalPower: true, charging: true)).showsPowerBolt
     }
 
     private static func baseSnapshot(now: Date, power: Double = 1.5,
