@@ -32,8 +32,14 @@ enum SelfTests {
         check("DarkWake frequency rule", testDarkWakeRule())
         check("menu battery level stays inside icon", testMenuBatteryPercentage())
         check("menu battery fallback", MenuBatteryStatus(battery: nil).percentageText == "—")
-        check("menu battery remains readable at menu-bar size",
-              MenuBatteryGlyph.bodyWidth >= 34 && MenuBatteryGlyph.bodyHeight >= 16)
+        check("menu battery dimensions remain compact (35 × 17 pt)",
+              MenuBatteryImageRenderer.width == 35 && MenuBatteryImageRenderer.height == 17)
+        check("menu battery outline, terminal and numbers drawn at 100",
+              MenuBatteryImageRenderer.hasDrawnOutlineAndTerminal(percentage: 100))
+        check("menu battery outline, terminal and numbers drawn at 9",
+              MenuBatteryImageRenderer.hasDrawnOutlineAndTerminal(percentage: 9))
+        check("menu battery outline and placeholder are drawn without telemetry",
+              MenuBatteryImageRenderer.hasDrawnOutlineAndTerminal(percentage: nil))
 
         print("SELF_TESTS: \(failures == 0 ? "PASS" : "FAIL") (\(failures) failures)")
         return failures == 0 ? 0 : 1
@@ -41,9 +47,9 @@ enum SelfTests {
 
     private static func testMenuBatteryPercentage() -> Bool {
         let levels: [(Double, String)] = [
-            (0, "0%"), (9, "9%"), (25.4, "25%"),
-            (74.7, "75%"), (99.7, "100%"), (100, "100%"),
-            (-1, "0%"), (101, "100%")
+            (0, "0"), (9, "9"), (25.4, "25"),
+            (74.7, "75"), (99.7, "100"), (100, "100"),
+            (-1, "0"), (101, "100")
         ]
         for (percentage, expected) in levels {
             let sample = BatterySnapshot(
